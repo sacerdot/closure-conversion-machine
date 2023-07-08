@@ -1,5 +1,5 @@
 %{
-open Term
+open Term.Source
 %}
 
 %token <string> ID
@@ -13,7 +13,7 @@ open Term
 %token END
 %token EOF
 
-%start <Term.term option> prog
+%start <term option> prog
 %%
 
 let prog :=
