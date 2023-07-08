@@ -8,8 +8,10 @@ open Term.Source
 %token LTUPLE "<"
 %token RTUPLE ">"
 %token LAMBDA "λ"
+%token PROJ "π"
 %token DOT "."
 %token SEMICOLON ";"
+%token <int> NUM
 %token END
 %token EOF
 
@@ -25,6 +27,9 @@ let line_end := END | EOF
 
 let variable :=
   | x = ID; { Var x }
+
+let num :=
+  | n = NUM; { n }
 
 let variable_list :=
   | v = ID; { [v] }
@@ -43,6 +48,7 @@ let term_list :=
 let non_abstraction :=
   | atomic
   | t = non_abstraction; u = atomic; { App (t, u) }
+  | "π"; n = num; u = atomic; { Proj (n,u) }
 
 let abstraction :=
   | "λ"; xs = variable_list; "."; u = term; { Abs (Array.of_list xs, u) }
