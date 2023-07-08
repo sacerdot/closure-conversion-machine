@@ -93,7 +93,7 @@ let rec run : status -> value = function status ->
     run (true,vs.(i),k,e,a)
  | (true,v,[],_,(k,e)::a) -> !!"seaa" ;
     run (true,v,k,e,a)
- | (true,v,[],_,[]) ->(*normal form*) v
+ | (true,v,[],_,[]) -> !!"term_from_normal_form"; v
  | _ -> assert false
 
 let test t = Printf.printf "%s" (pp_term (run (false,t,[],([||],[||]),[])))
