@@ -10,6 +10,7 @@ let rec loop lexer =
      Printf.printf "Intermediate term:\n%s\n\n" (Intermediate.show_term t);
      let t = Target.of_intermediate_term t in
      Printf.printf "Target term:\n%s\n\n" (Target.show_term t);
+     Machine.test t;
      loop lexer
   | None -> ()
 

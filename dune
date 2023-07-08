@@ -10,8 +10,15 @@
  (preprocess
   (pps ppx_deriving.show)))
 
+(library
+ (name machine)
+ (modules machine)
+ (libraries term)
+ (preprocess
+  (pps ppx_deriving.show)))
+
 (executable
  (name main)
  (public_name main)
  (modules main parser lexer)
- (libraries term))
+ (libraries machine))
