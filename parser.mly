@@ -32,7 +32,7 @@ let num :=
   | n = NUM; { n }
 
 let variable_list :=
-  | v = ID; { [v] }
+  | { [] }
   | v = ID; l = variable_list; { v::l }
 
 let atomic :=
