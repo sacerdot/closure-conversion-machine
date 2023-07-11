@@ -12,7 +12,7 @@ let rec loop lexer =
      let t = Target.of_intermediate_term t in
      Printf.printf "Target term:\n%s\n\n" (Target.show_term t);
      Printf.printf "Reduction:\n";
-     Machine.test t;
+     Machine.reduce t;
      Printf.printf "\n\n----------------------------------------\n\n";
      loop lexer
   | None -> ()

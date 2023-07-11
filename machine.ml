@@ -1,7 +1,15 @@
 open Term.Target
 
-type tuple = term array
+(* This module implements the Tupled Target Abstract Machine (TTAM).
+   First the TTAM data structures are introduced. Then the PP module is
+   used for pretty-printing. Finally the "run" function implements the
+   machine main loop and transitions.
+*)
+
+(* the implementation does not distinguish values from terms *)
 type value = term
+
+type tuple = term array
 
 type stack_item =
    Todo of term
@@ -16,47 +24,55 @@ type ars = ar list
 
 type status = bool * term * stack * env * ars
 
-let pp_array f a =
- let s = ref "<" in
- for i = 0 to Array.length a - 1 do
-  s := !s ^ f a.(i) ^ if i < Array.length a - 1 then ";" else ""
- done ;
- !s ^ ">"
+(* pretty-printing functions for terms, stacks, environments, ars and machine states *)
+module PP =
+struct
 
-let rec pp_term =
- function
-   P (L i) -> "π" ^ string_of_int i ^ "l"
- | P (S i) -> "π" ^ string_of_int i ^ "s"
- | App(t,u) -> "(" ^ pp_term t ^ pp_term u ^ ")"
- | Proj(i,t) -> "π" ^ string_of_int i ^ pp_term t
- | Tuple ts -> pp_array pp_term ts
- | Clos(f,n,t,us) ->
-    "[?" ^ pp_term t ^ "|" ^ pp_array pp_term us ^ "]_(" ^ string_of_int f ^ "," ^ string_of_int n ^ ")"
+ let pp_array f a =
+  let s = ref "<" in
+  for i = 0 to Array.length a - 1 do
+   s := !s ^ f a.(i) ^ if i < Array.length a - 1 then ";" else ""
+  done ;
+  !s ^ ">"
+ 
+ let rec pp_term =
+  function
+    P (L i) -> "π" ^ string_of_int i ^ "l"
+  | P (S i) -> "π" ^ string_of_int i ^ "s"
+  | App(t,u) -> "(" ^ pp_term t ^ pp_term u ^ ")"
+  | Proj(i,t) -> "π" ^ string_of_int i ^ pp_term t
+  | Tuple ts -> pp_array pp_term ts
+  | Clos(f,n,t,us) ->
+     "[?" ^ pp_term t ^ "|" ^ pp_array pp_term us ^ "]_(" ^ string_of_int f ^ "," ^ string_of_int n ^ ")"
+ 
+ let pp_stack_item =
+  function
+    Todo t -> "?" ^ pp_term t
+  | Done v -> "!" ^ pp_term v
+  | SProj i -> "π" ^ string_of_int i
+  | STuple (i,ts) -> string_of_int i ^ "~" ^ pp_array pp_term ts
+ 
+ let pp_stack k =
+  let s = String.concat ":" (List.map pp_stack_item k) in
+  if s = "" then "[]" else s ^ ":[]"
+ let pp_env (fs,ns) = "(" ^ pp_array pp_term fs ^ "," ^ pp_array pp_term ns ^ ")"
+ let pp_ar (k,e) = "(" ^ pp_stack k ^ "," ^ pp_env e ^ ")"
+ let pp_ars a = String.concat ":" (List.map pp_ar a) ^ ":[]"
+ let pp_status (b,t,k,e,a) =
+  (if b then "!" else "?") ^ " | " ^
+  pp_term t ^ " | " ^
+  pp_stack k ^ " | " ^
+  pp_env e ^ " | " ^
+  pp_ars a
 
-let pp_stack_item =
- function
-   Todo t -> "?" ^ pp_term t
- | Done v -> "!" ^ pp_term v
- | SProj i -> "π" ^ string_of_int i
- | STuple (i,ts) -> string_of_int i ^ "~" ^ pp_array pp_term ts
+end
 
-let pp_stack k =
- let s = String.concat ":" (List.map pp_stack_item k) in
- if s = "" then "[]" else s ^ ":[]"
-let pp_env (fs,ns) = "(" ^ pp_array pp_term fs ^ "," ^ pp_array pp_term ns ^ ")"
-let pp_ar (k,e) = "(" ^ pp_stack k ^ "," ^ pp_env e ^ ")"
-let pp_ars a = String.concat ":" (List.map pp_ar a) ^ ":[]"
-let pp_status (b,t,k,e,a) =
- (if b then "!" else "?") ^ " | " ^
- pp_term t ^ " | " ^
- pp_stack k ^ " | " ^
- pp_env e ^ " | " ^
- pp_ars a
-
+(* auxiliary function to print rule names inside arrows *)
 let (!!) s = Printf.printf "\n-%s->\n" s
 
+(* TTAM main loop *)
 let rec run : status -> value = function status ->
- Printf.printf "%s" (pp_status status);
+ Printf.printf "%s" (PP.pp_status status);
  match status with
    (false,App(t,u),k,e,a) -> !!"?sea1" ; run (false,u,Todo t::k,e,a)
  | (false,Proj(n,t),k,e,a) -> !!"?sea2" ; run (false,t,SProj n::k,e,a)
@@ -94,16 +110,8 @@ let rec run : status -> value = function status ->
     run (true,vs.(i),k,e,a)
  | (true,v,[],_,(k,e)::a) -> !!"!sea7" ;
     run (true,v,k,e,a)
- | (true,v,[],_,[]) -> !!"term_from_normal_form"; v                       (** CSC: pallini rossi e blu nelle chiusure e tuple **)
+ | (true,v,[],_,[]) -> !!"term_from_normal_form"; v
  | _ -> assert false
 
-let test t = Printf.printf "%s" (pp_term (run (false,t,[],([||],[||]),[])))
-
-(*
-let ex1 =
- App
-  (Clos(0,2,Proj(0,S 0),[||]),
-   Tuple [|Tuple [|Tuple [||]; Tuple[||]|]; Tuple [||]|])
-
-let _ = test ex1
-*)
+(* main function to reduce a target term to normal form *)
+let reduce t = Printf.printf "%s" (PP.pp_term (run (false,t,[],([||],[||]),[])))

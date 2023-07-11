@@ -1,4 +1,0 @@
-0) document syntax: unicode + \ + *
-1) document that abstractions need parentheses when used in argument positions
-2) raises an assert false during the translation to target language if the initial term is not closed
-3) it allows same variable names in abstractions; the last one is the binding one

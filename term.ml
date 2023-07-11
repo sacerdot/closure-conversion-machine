@@ -10,6 +10,7 @@ struct
  
  module StringSet = Set.Make(String)
 
+ (* computes the set of free variables of a source term *)
  let rec fv = StringSet.(
   function
     | Var x -> singleton x
@@ -29,6 +30,7 @@ struct
    | Tuple of term array
    [@@deriving show {with_path = false}]
 
+ (* translates a source term to an intermediate term *)
  let rec of_source_term =
   function
    | Source.Var x -> Var x
@@ -59,6 +61,7 @@ struct
   let rec aux i = if i < 0 then None else if a.(i) = x then Some i else aux (i-1) in
   aux (Array.length a - 1)
 
+ (* translates an (open) intermediate term to a target term *)
  let rec of_intermediate_term ys xs =
   function
    | Intermediate.Var x ->
@@ -72,5 +75,6 @@ struct
    | Intermediate.Clos(zs,ws,t,us) ->
       Clos(Array.length zs, Array.length ws, of_intermediate_term zs ws t, Array.map (of_intermediate_term ys xs) us)
  
+ (* translates a closed intermediate term to a target term *)
  let of_intermediate_term = of_intermediate_term [||] [||]
 end
