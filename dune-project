@@ -4,6 +4,6 @@
 
 (package
  (name closure-conversion-machine)
- (depends ocaml dune))
+ (depends ocaml dune menhir ppx-show))
 
 (using menhir 2.0)
