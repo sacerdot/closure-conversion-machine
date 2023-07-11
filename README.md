@@ -37,14 +37,14 @@ Stuck terms (e.g. a projection applied to an abstraction) will also crash the TT
 # output syntax
 The source, intermediate and target terms corresponding to the user input are first displayed according to the internal representation, without any pretty-printing or sugaring. The terms, stacks, environments and machine states of the TTAM are printed in compact syntax according to the following grammar that does not distinguish between terms and values:
 
-p ::= πnl | πnr
-t ::= p | πn t | <ts> | [?t|b]_(n,m)
-b ::= ps | ts
-stack_item ::= ?t | !t | πn | i~<ts>
-env ::= ( ts, ts )
-ar ::= ( stack, env )
-flag ::= ? | !
-status ::= flag | t | stack | env | ars
+p ::= πnl | πnr  
+t ::= p | πn t | <ts> | [?t|b]_(n,m)  
+b ::= ps | ts  
+stack_item ::= ?t | !t | πn | i~<ts>  
+env ::= ( ts, ts )  
+ar ::= ( stack, env )  
+flag ::= ? | !  
+status ::= flag | t | stack | env | ars  
 
 where
 * a stack is a list of stack_items
