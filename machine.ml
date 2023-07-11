@@ -25,33 +25,32 @@ let pp_array f a =
 
 let rec pp_term =
  function
-   L i -> "L" ^ string_of_int i
- | S i -> "S" ^ string_of_int i
- | App(t,u) -> "(" ^ pp_term t ^ " " ^ pp_term u ^ ")"
+   P (L i) -> "π" ^ string_of_int i ^ "l"
+ | P (S i) -> "π" ^ string_of_int i ^ "s"
+ | App(t,u) -> "(" ^ pp_term t ^ pp_term u ^ ")"
  | Proj(i,t) -> "π" ^ string_of_int i ^ pp_term t
  | Tuple ts -> pp_array pp_term ts
  | Clos(f,n,t,us) ->
-    "[" ^ string_of_int f ^ "," ^ string_of_int n ^ "," ^
-     pp_term t ^ "|" ^ pp_array pp_term us ^ "]"
+    "[?" ^ pp_term t ^ "|" ^ pp_array pp_term us ^ "]_(" ^ string_of_int f ^ "," ^ string_of_int n ^ ")"
 
 let pp_stack_item =
  function
    Todo t -> "?" ^ pp_term t
  | Done v -> "!" ^ pp_term v
- | SProj i -> "P" ^ string_of_int i
+ | SProj i -> "π" ^ string_of_int i
  | STuple (i,ts) -> string_of_int i ^ "~" ^ pp_array pp_term ts
 
 let pp_stack k =
  let s = String.concat ":" (List.map pp_stack_item k) in
  if s = "" then "[]" else s ^ ":[]"
 let pp_env (fs,ns) = "(" ^ pp_array pp_term fs ^ "," ^ pp_array pp_term ns ^ ")"
-let pp_ar (k,e) = pp_stack k ^ "," ^ pp_env e
-let pp_ars a = String.concat ":" (List.map pp_ar a)
+let pp_ar (k,e) = "(" ^ pp_stack k ^ "," ^ pp_env e ^ ")"
+let pp_ars a = String.concat ":" (List.map pp_ar a) ^ ":[]"
 let pp_status (b,t,k,e,a) =
- (if b then "!" else "?") ^ "|" ^
- pp_term t ^ "|" ^
- pp_stack k ^ "|" ^
- pp_env e ^ "|" ^
+ (if b then "!" else "?") ^ " | " ^
+ pp_term t ^ " | " ^
+ pp_stack k ^ " | " ^
+ pp_env e ^ " | " ^
  pp_ars a
 
 let (!!) s = Printf.printf "\n-%s->\n" s
@@ -59,41 +58,43 @@ let (!!) s = Printf.printf "\n-%s->\n" s
 let rec run : status -> value = function status ->
  Printf.printf "%s" (pp_status status);
  match status with
-   (false,App(t,u),k,e,a) -> !!"sea1" ; run (false,u,Todo t::k,e,a)
- | (false,Proj(n,t),k,e,a) -> !!"sea2" ; run (false,t,SProj n::k,e,a)
- | (false,(Tuple [||] as v),k,e,a) -> !!"sea4" ; run (true,v,k,e,a)
- | (false,Tuple ts,k,e,a) -> !!"sea3" ;
+   (false,App(t,u),k,e,a) -> !!"?sea1" ; run (false,u,Todo t::k,e,a)
+ | (false,Proj(n,t),k,e,a) -> !!"?sea2" ; run (false,t,SProj n::k,e,a)
+ | (false,(Tuple [||] as v),k,e,a) -> !!"?sea4" ; run (true,v,k,e,a)
+ | (false,Tuple ts,k,e,a) -> !!"?sea3" ;
      let ts' = Array.copy ts in
      let i = Array.length ts' - 1 in
      run (false,ts'.(i),STuple(i,ts')::k,e,a)
- | (false,Clos(f,n,t,us),k,((fs,ns) as e),a) -> !!"subw" ;
+ | (false,Clos(f,n,t,us),k,((fs,ns) as e),a) -> !!"?subw" ;
     let us' =
      Array.map
       (function
-          L n when n < Array.length fs -> fs.(n)
-        | S n when n < Array.length ns -> ns.(n)
+          P (L n) when n < Array.length fs -> fs.(n)
+        | P (S n) when n < Array.length ns -> ns.(n)
         | _ -> assert false) us in
     run (true,Clos(f,n,t,us'),k,e,a)
- | (false,L n,k,((fs,_) as e),a) when n < Array.length fs -> !!"subl" ;
-     run (true,fs.(n),k,e,a)
- | (false,S n,k,((_,ns) as e),a) when n < Array.length ns -> !!"subs" ;
-     run (true,ns.(n),k,e,a)
+ | (false,P p,k,((fs,ns) as e),a) -> !!"?subv" ;
+     let t =
+      match p with
+       | L n -> assert (n < Array.length fs) ; fs.(n)
+       | S n ->  assert (n < Array.length ns) ; ns.(n) in
+     run (true,t,k,e,a)
  | (true,Clos(f,n,t,v),Done (Tuple v')::k,e,a)
-     when f = Array.length v && n = Array.length v'-> !!"beta" ;
+     when f = Array.length v && n = Array.length v'-> !!"!beta_v" ;
      run (false,t,[],(v,v'),(k,e)::a)
- | (true,v,Todo t::k,e,a) -> !!"sea1'" ; run (false,t,Done v::k,e,a)
- | (true,v,STuple(i,ts)::k,e,a) when i > 0 -> !!"sea2'" ;
+ | (true,v,Todo t::k,e,a) -> !!"!sea1'" ; run (false,t,Done v::k,e,a)
+ | (true,v,STuple(i,ts)::k,e,a) when i > 0 -> !!"!sea6'" ;
     ts.(i) <- v;
     let i' = i-1 in
     run (false,ts.(i'),STuple(i',ts)::k,e,a)
- | (true,v,STuple(0,ts)::k,e,a) -> !!"sea3'" ;
+ | (true,v,STuple(0,ts)::k,e,a) -> !!"!sea3'" ;
     ts.(0) <- v;
     run (true,Tuple ts,k,e,a)
- | (true,Tuple vs,SProj i::k,e,a) when i < Array.length vs -> !!"pi" ;
+ | (true,Tuple vs,SProj i::k,e,a) when i < Array.length vs -> !!"!pi" ;
     run (true,vs.(i),k,e,a)
- | (true,v,[],_,(k,e)::a) -> !!"seaa" ;
+ | (true,v,[],_,(k,e)::a) -> !!"!sea7" ;
     run (true,v,k,e,a)
- | (true,v,[],_,[]) -> !!"term_from_normal_form"; v
+ | (true,v,[],_,[]) -> !!"term_from_normal_form"; v                       (** CSC: pallini rossi e blu nelle chiusure e tuple **)
  | _ -> assert false
 
 let test t = Printf.printf "%s" (pp_term (run (false,t,[],([||],[||]),[])))

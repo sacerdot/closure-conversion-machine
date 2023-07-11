@@ -42,14 +42,18 @@ end
 
 module Target =
 struct
+ type projected_var =
+  | L of int
+  | S of int
+  [@@deriving show {with_path = false}]
+
  type term =
-   | L of int
-   | S of int
-   | App of term * term
-   | Proj of int * term
-   | Clos of int * int * term * term array (* only vars and values allowed in the array *)
-   | Tuple of term array
-   [@@deriving show {with_path = false}]
+  | P of projected_var
+  | App of term * term
+  | Proj of int * term
+  | Clos of int * int * term * term array (* only vars and values allowed in the array *)
+  | Tuple of term array
+  [@@deriving show {with_path = false}]
  
  let get_pos x a =
   let rec aux i = if i < 0 then None else if a.(i) = x then Some i else aux (i-1) in
@@ -59,8 +63,8 @@ struct
   function
    | Intermediate.Var x ->
       (match get_pos x ys, get_pos x xs with
-        | Some i, None -> L i
-        | None, Some i -> S i
+        | Some i, None -> P (L i)
+        | None, Some i -> P (S i)
         | _, _ -> assert false)
    | Intermediate.App(t,u) -> App(of_intermediate_term ys xs t, of_intermediate_term ys xs u)
    | Intermediate.Proj(i,t) -> Proj(i, of_intermediate_term ys xs t)
