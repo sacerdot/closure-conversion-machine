@@ -55,7 +55,7 @@ struct
  let pp_stack k =
   let s = String.concat ":" (List.map pp_stack_item k) in
   if s = "" then "[]" else s ^ ":[]"
- let pp_env (fs,ns) = "(" ^ pp_array pp_term fs ^ "," ^ pp_array pp_term ns ^ ")"
+ let pp_env (l,s) = "(" ^ pp_array pp_term l ^ "," ^ pp_array pp_term s ^ ")"
  let pp_ar (k,e) = "(" ^ pp_stack k ^ "," ^ pp_env e ^ ")"
  let pp_ars a = String.concat ":" (List.map pp_ar a) ^ ":[]"
  let pp_status (b,t,k,e,a) =
@@ -81,19 +81,19 @@ let rec run : status -> value = function status ->
      let ts' = Array.copy ts in
      let i = Array.length ts' - 1 in
      run (false,ts'.(i),STuple(i,ts')::k,e,a)
- | (false,Clos(f,n,t,us),k,((fs,ns) as e),a) -> !!"?subw" ;
+ | (false,Clos(f,n,t,us),k,((l,s) as e),a) -> !!"?subw" ;
     let us' =
      Array.map
       (function
-          P (L n) when n < Array.length fs -> fs.(n)
-        | P (S n) when n < Array.length ns -> ns.(n)
+          P (L n) when n < Array.length l -> l.(n)
+        | P (S n) when n < Array.length s -> s.(n)
         | _ -> assert false) us in
     run (true,Clos(f,n,t,us'),k,e,a)
- | (false,P p,k,((fs,ns) as e),a) -> !!"?subv" ;
+ | (false,P p,k,((l,s) as e),a) -> !!"?subv" ;
      let t =
       match p with
-       | L n -> assert (n < Array.length fs) ; fs.(n)
-       | S n ->  assert (n < Array.length ns) ; ns.(n) in
+       | L n -> assert (n < Array.length l) ; l.(n)
+       | S n ->  assert (n < Array.length s) ; s.(n) in
      run (true,t,k,e,a)
  | (true,Clos(f,n,t,v),Done (Tuple v')::k,e,a)
      when f = Array.length v && n = Array.length v'-> !!"!beta_v" ;
