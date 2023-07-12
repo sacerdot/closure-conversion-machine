@@ -32,7 +32,7 @@ As usual application is associative to the left and white spaces and parentheses
 Remember that the arguments of abstractions must reduce to tuples that are matched against the vars list. For example "(λx.x) <y>" is a valid application that reduces to "y", whereas "(λx.x) y" is a stuck term.
 
 The input term must be closed. Entering an open term will crash the REPL during translation to the target language.
-Stuck terms (e.g. a projection applied to an abstraction) will also crash the TTAM during reduction.
+Non clash-free terms (e.g. terms that reduce to a projection applied to an abstraction) will also crash the TTAM during reduction.
 
 # output syntax
 The source, intermediate and target terms corresponding to the user input are first displayed according to the internal representation, without any pretty-printing or sugaring. The terms, stacks, environments and machine states of the TTAM are printed in compact syntax according to the following grammar that does not distinguish between terms and values:
