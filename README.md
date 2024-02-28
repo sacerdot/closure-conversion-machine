@@ -38,21 +38,21 @@ Non clash-free terms (e.g. terms that reduce to a projection applied to an abstr
 The source, intermediate and target terms corresponding to the user input are first displayed according to the internal representation, without any pretty-printing or sugaring. The terms, stacks, environments and machine states of the TTAM are printed in compact syntax according to the following grammar that does not distinguish between terms and values:
 
 p ::= πnw | πns
-t ::= p | πn t | <ts> | [?t|b]_(n,m)  
+t ::= p | πn t | <ts> | [◦t|b]_(n,m)  
 b ::= ps | ts  
-stack_item ::= ?t | !t | πn | i~<ts>  
+stack_item ::= ◦t | •t | πn | i~<ts>  
 env ::= ( ts, ts )  
 ar ::= ( stack, env )  
-flag ::= ? | !  
+flag ::= ◦ | •  
 status ::= flag | t | stack | env | ars  
 
 where
 * a stack is a list of stack_items
 * an ars is a list of ar (activation record)
 * elements of lists are separated by ":" and terminated by "[]"
-* "?" means "non-evaluated" and "!" evaluated; in the paper they correspond to the red and blue dots respectively
+* "◦" means "non-evaluated" and "•" evaluated, like in the paper
 
-When printing TTAM transitions, the names of the transitions are printed inside an arrow (es. "-?sea1->"). Rule names are prefixed by "?" or "!" whereas in the paper the rule names where respectively red and blue.
+When printing TTAM transitions, the names of the transitions are printed inside an arrow (es. "-◦sea1->").
 
 # code organization
 The code is organized in four files:
