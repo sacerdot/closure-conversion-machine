@@ -27,7 +27,7 @@ where
 * n is a natural number
 * the ASCII symbol "\" can be used in place of "λ", and "*" in place of "π"
 
-As usual application is associative to the left and white spaces and parentheses can be used. Parentheses are mandatory around abstractions used in argument position in applications.<
+As usual application is associative to the left and white spaces and parentheses can be used. Parentheses are mandatory around abstractions used in argument position in applications.
 
 Remember that the arguments of abstractions must reduce to tuples that are matched against the vars list. For example "(λx.x) <y>" is a valid application that reduces to "y", whereas "(λx.x) y" is a stuck term.
 
@@ -37,7 +37,7 @@ Non clash-free terms (e.g. terms that reduce to a projection applied to an abstr
 # output syntax
 The source, intermediate and target terms corresponding to the user input are first displayed according to the internal representation, without any pretty-printing or sugaring. The terms, stacks, environments and machine states of the TTAM are printed in compact syntax according to the following grammar that does not distinguish between terms and values:
 
-p ::= πnl | πnr  
+p ::= πnw | πns
 t ::= p | πn t | <ts> | [?t|b]_(n,m)  
 b ::= ps | ts  
 stack_item ::= ?t | !t | πn | i~<ts>  
@@ -58,7 +58,7 @@ When printing TTAM transitions, the names of the transitions are printed inside 
 The code is organized in four files:
 * lexer.mll: the lexer for the input language (in ocamllex syntax)
 * parser.mly: the parser for the input language (in menhir syntax)
-* term.ml: it contains three submodules Source/Intermediate/Target, one for each languge. Each module defines an algebraic data type "term" to capture the abstract syntax tree of terms of that language. Moreover the Intermeidate and Target modules export a function to build terms from the previous representation
+* term.ml: it contains three submodules Source/Intermediate/Target, one for each language. Each module defines an algebraic data type "term" to capture the abstract syntax tree of terms of that language. Moreover the Intermeidate and Target modules export a function to build terms from the previous representation
 * machine.ml: it implements the TTAM. Algebraic data types are first used to capture stacks, environments, ars and states of a TTAM. A pretty-printing module follows to pretty-print the above data structures. Finally the TTAM implementation follows: first the main loop and transitions (the "run") function, then the "reduce" function that takes a target term, builds the initial machine state and runs it to normal form.
 
 A TEST file contains three small terms to show the input syntax.

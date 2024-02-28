@@ -26,26 +26,27 @@ struct
    | Var of string
    | App of term * term
    | Proj of int * term
-   | Clos of string array * string array * term * term array (* only vars and values allowed in the array *)
+   | Clos of string array * string array * term * bag
    | Tuple of term array
+ and bag = term array (* only vars and values allowed in a bag *)
    [@@deriving show {with_path = false}]
 
- (* translates a source term to an intermediate term *)
- let rec of_source_term =
+ (* wrapping translates a source term to an intermediate term *)
+ let rec wrap =
   function
    | Source.Var x -> Var x
-   | Source.App(t,u) -> App(of_source_term t, of_source_term u)
-   | Source.Proj(i,t) -> Proj(i, of_source_term t)
-   | Source.Tuple(ts) -> Tuple(Array.map of_source_term ts)
+   | Source.App(t,u) -> App(wrap t, wrap u)
+   | Source.Proj(i,t) -> Proj(i, wrap t)
+   | Source.Tuple(ts) -> Tuple(Array.map wrap ts)
    | Source.Abs(xs,t) as i ->
       let ys = Array.of_list (Source.StringSet.elements (Source.fv i)) in
-      Clos(ys, xs, of_source_term t, Array.map (fun v -> Var v) ys)
+      Clos(ys, xs, wrap t, Array.map (fun v -> Var v) ys)
 end
 
 module Target =
 struct
  type projected_var =
-  | L of int
+  | W of int
   | S of int
   [@@deriving show {with_path = false}]
 
@@ -53,8 +54,9 @@ struct
   | P of projected_var
   | App of term * term
   | Proj of int * term
-  | Clos of int * int * term * term array (* only vars and values allowed in the array *)
+  | Clos of int * int * term * bag
   | Tuple of term array
+ and bag = term array (* only vars and values allowed in a bag *)
   [@@deriving show {with_path = false}]
  
  let get_pos x a =
@@ -62,19 +64,19 @@ struct
   aux (Array.length a - 1)
 
  (* translates an (open) intermediate term to a target term *)
- let rec of_intermediate_term ys xs =
+ let rec eliminate_names ys xs =
   function
    | Intermediate.Var x ->
       (match get_pos x ys, get_pos x xs with
-        | Some i, None -> P (L i)
+        | Some i, None -> P (W i)
         | None, Some i -> P (S i)
         | _, _ -> assert false)
-   | Intermediate.App(t,u) -> App(of_intermediate_term ys xs t, of_intermediate_term ys xs u)
-   | Intermediate.Proj(i,t) -> Proj(i, of_intermediate_term ys xs t)
-   | Intermediate.Tuple(ts) -> Tuple(Array.map (of_intermediate_term ys xs) ts)
+   | Intermediate.App(t,u) -> App(eliminate_names ys xs t, eliminate_names ys xs u)
+   | Intermediate.Proj(i,t) -> Proj(i, eliminate_names ys xs t)
+   | Intermediate.Tuple(ts) -> Tuple(Array.map (eliminate_names ys xs) ts)
    | Intermediate.Clos(zs,ws,t,us) ->
-      Clos(Array.length zs, Array.length ws, of_intermediate_term zs ws t, Array.map (of_intermediate_term ys xs) us)
+      Clos(Array.length zs, Array.length ws, eliminate_names zs ws t, Array.map (eliminate_names ys xs) us)
  
  (* translates a closed intermediate term to a target term *)
- let of_intermediate_term = of_intermediate_term [||] [||]
+ let eliminate_names = eliminate_names [||] [||]
 end

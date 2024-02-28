@@ -37,7 +37,7 @@ struct
  
  let rec pp_term =
   function
-    P (L i) -> "π" ^ string_of_int i ^ "l"
+    P (W i) -> "π" ^ string_of_int i ^ "w"
   | P (S i) -> "π" ^ string_of_int i ^ "s"
   | App(t,u) -> "(" ^ pp_term t ^ pp_term u ^ ")"
   | Proj(i,t) -> "π" ^ string_of_int i ^ pp_term t
@@ -85,14 +85,14 @@ let rec run : status -> value = function status ->
     let us' =
      Array.map
       (function
-          P (L n) when n < Array.length l -> l.(n)
+          P (W n) when n < Array.length l -> l.(n)
         | P (S n) when n < Array.length s -> s.(n)
         | _ -> assert false) us in
     run (true,Clos(f,n,t,us'),k,e,a)
  | (false,P p,k,((l,s) as e),a) -> !!"?subv" ;
      let t =
       match p with
-       | L n -> assert (n < Array.length l) ; l.(n)
+       | W n -> assert (n < Array.length l) ; l.(n)
        | S n ->  assert (n < Array.length s) ; s.(n) in
      run (true,t,k,e,a)
  | (true,Clos(f,n,t,v),Done (Tuple v')::k,e,a)
