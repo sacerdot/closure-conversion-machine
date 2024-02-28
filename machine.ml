@@ -68,6 +68,11 @@ struct
   done ;
   !s
  
+ (* If [is_value] is true, the term is known to have been evaluated
+    and it is therefore printed as such, prefixing it with "•".
+    Otherwise it is prefixed by "◦". The [is_value] flag is propagated
+    in recursive calls of [pp_term] according to the machine invariants.
+ *)
  let rec pp_term ~is_value t =
   (if is_value then "•" else "◦") ^
   match t with
