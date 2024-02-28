@@ -112,17 +112,21 @@ let (!!) s = Printf.printf "\n-%s->\n" s
    Ignoring the computational cost of calls to pp_status, used to output
    the reduction steps to the user, and to [Array.length], to detect
    stuck configurations (clashes), the code runs in bi-linear time in
-   the number of machine steps and the size of the initial term because:
+   the number of machine steps and the width of the initial term because:
    - every branch of the pattern match implements a machine transition
    - all recursive calls are in tail position and therefore the number
      of function calls is linear in the number of machine steps
    - excluding [pp_status] and calls to [Array.length], the only other
      functions invoked are iterations over tuples are:
-       - [Array.copy] in the "◦sea3" rule, which is linear in the size
+       - [Array.copy] in the "◦sea3" rule, which is linear in the width
          of a non-evaluated tuple, which is a subterm of the initial term
-       - [Array.map] in the "◦subw" rule, which is linear in the size
+       - [Array.map] in the "◦subw" rule, which is linear in the width
          of the bag of a non-evaluated closure, which is a subterm of the
          initial term
+   We refer to the paper for the global, more fine grained analysis of
+   the computational cost of the machine, that is there expressed only
+   as a function of the number of "•beta_v" steps and the size of the
+   initial term.
 *)
 let rec run : status -> value = function status ->
  Printf.printf "%s" (PP.pp_status status);
