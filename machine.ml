@@ -56,46 +56,46 @@ struct
      position we print ↓, i.e. we are printing a tuple stack item *)
  let pp_array ~is_value ?(replacing=(-1)) f a =
   let is_value = ref is_value in
-  let s = ref "<" in
+  let s = ref "" in
   for i = 0 to Array.length a - 1 do
    let res =
     if i = replacing then begin
      is_value := true ;
      "↓"
     end else
-     (if !is_value then "•" else "◦") ^ f ~is_value:!is_value a.(i) in
+     f ~is_value:!is_value a.(i) in
    s := !s ^ res ^ if i < Array.length a - 1 then ";" else ""
   done ;
-  !s ^ ">"
+  !s
  
- let rec pp_term ~is_value =
-  function
+ let rec pp_term ~is_value t =
+  (if is_value then "•" else "◦") ^
+  match t with
     P (W i) -> "π" ^ pp_subscript i ^ "w"
   | P (S i) -> "π" ^ pp_subscript i ^ "s"
   | App(t,u) -> "(" ^ pp_term ~is_value t ^ pp_term ~is_value u ^ ")"
   | Proj(i,t) -> "π" ^ pp_subscript i ^ pp_term ~is_value t
-  | Tuple ts -> pp_array ~is_value pp_term ts
+  | Tuple ts -> "<" ^ pp_array ~is_value pp_term ts ^ ">"
   | Clos(f,n,t,us) ->
-     "[◦" ^ pp_term ~is_value:false t ^ "|" ^ pp_array ~is_value pp_term us ^ "]₍" ^ pp_subscript f ^ "," ^ pp_subscript n ^ "₎"
+     "[" ^ pp_term ~is_value:false t ^ "|" ^ pp_array ~is_value pp_term us ^ "]₍" ^ pp_subscript f ^ "," ^ pp_subscript n ^ "₎"
  
  let pp_stack_item =
   function
-    Todo t -> "◦" ^ pp_term ~is_value:false t
-  | Done v -> "•" ^ pp_term ~is_value:true v
+    Todo t -> pp_term ~is_value:false t
+  | Done v -> pp_term ~is_value:true v
   | SProj i -> "π" ^ pp_subscript i
-  | STuple (i,ts) -> pp_array ~is_value:false ~replacing:i pp_term ts
+  | STuple (i,ts) -> "<" ^ pp_array ~is_value:false ~replacing:i pp_term ts ^ ">"
  
  let pp_stack k =
   let s = String.concat ":" (List.map pp_stack_item k) in
   if s = "" then "[]" else s ^ ":[]"
- let pp_env (l,s) = "(" ^ pp_array ~is_value:true pp_term l ^ "," ^ pp_array ~is_value:true pp_term s ^ ")"
+ let pp_env (l,s) = pp_array ~is_value:true pp_term l ^ "," ^ pp_array ~is_value:true pp_term s
  let pp_ar (k,e) = "(" ^ pp_stack k ^ "," ^ pp_env e ^ ")"
- let pp_ars a = String.concat ":" (List.map pp_ar a) ^ ": []"
+ let pp_ars a = String.concat " : " (List.map pp_ar a) ^ " : []"
  let pp_status (b,t,k,e,a) =
-  (if b then "•" else "◦") ^
   pp_term ~is_value:b t ^ " | " ^
   pp_stack k ^ " | " ^
-  pp_env e ^ " | " ^
+  pp_env e ^ " |" ^
   pp_ars a
 
 end
