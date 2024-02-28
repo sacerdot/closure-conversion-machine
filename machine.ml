@@ -169,4 +169,5 @@ let rec run : status -> value = function status ->
 (* main function to reduce a target term to normal form *)
 let reduce t =
  let nf = run (false,t,[],([||],[||]),[]) in
- Printf.printf "\n\nThe value extracted from the normal form is:\n  %s" (PP.pp_term ~is_value:true nf)
+ Printf.printf "\n\nThe value extracted from the normal form is:\n  %s"
+  (PP.pp_term ~is_value:true nf)
