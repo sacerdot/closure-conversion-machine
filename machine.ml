@@ -131,12 +131,12 @@ let rec run : status -> value = function status ->
  | (true,Clos(f,n,t,v),Done (Tuple v')::k,e,a)
      when f = Array.length v && n = Array.length v'-> !!"•beta_v" ;
      run (false,t,[],(v,v'),(k,e)::a)
- | (true,v,Todo t::k,e,a) -> !!"•sea1'" ; run (false,t,Done v::k,e,a)
- | (true,v,STuple(i,ts)::k,e,a) when i > 0 -> !!"•sea6'" ;
+ | (true,v,Todo t::k,e,a) -> !!"•sea1" ; run (false,t,Done v::k,e,a)
+ | (true,v,STuple(i,ts)::k,e,a) when i > 0 -> !!"•sea6" ;
     ts.(i) <- v;
     let i' = i-1 in
     run (false,ts.(i'),STuple(i',ts)::k,e,a)
- | (true,v,STuple(0,ts)::k,e,a) -> !!"•sea3'" ;
+ | (true,v,STuple(0,ts)::k,e,a) -> !!"•sea3" ;
     ts.(0) <- v;
     run (true,Tuple ts,k,e,a)
  | (true,Tuple vs,SProj i::k,e,a) when i < Array.length vs -> !!"•pi" ;

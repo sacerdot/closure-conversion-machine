@@ -39,19 +39,16 @@ The source, intermediate and target terms corresponding to the user input are fi
 
 p ::= πₙw | πₙs
 t ::= p | πₙ t | <t;..;t> | [◦t|b]₍ₙ,ₘ₎
-b ::= ps | ts
+b ::= p;..;p | t;..;t
 stack_item ::= ◦t | •t | πₙ | <◦t;..;◦t;↓;•t;..;•t>
-env ::= ( ts, ts )  
+stack ::= stack_item : .. : stack_item : []
+env ::= t;..;t, t;..;t
 ar ::= ( stack, env )  
 ars ::= ar : .. : ar : []
 flag ::= ◦ | •  
 status ::= flag | t | stack | env | ars  
 
-where
-* a stack is a list of stack_items
-* an ars is a list of ar (activation record)
-* elements of lists are separated by ":" and terminated by "[]"
-* "◦" means "non-evaluated" and "•" evaluated, like in the paper
+where "◦" means "non-evaluated" and "•" evaluated, like in the paper.
 
 When printing TTAM transitions, the names of the transitions are printed inside an arrow (es. "-◦sea1->").
 
@@ -60,6 +57,6 @@ The code is organized in four files:
 * lexer.mll: the lexer for the input language (in ocamllex syntax)
 * parser.mly: the parser for the input language (in menhir syntax)
 * term.ml: it contains three submodules Source/Intermediate/Target, one for each language. Each module defines an algebraic data type "term" to capture the abstract syntax tree of terms of that language. Moreover the Intermeidate and Target modules export a function to build terms from the previous representation
-* machine.ml: it implements the TTAM. Algebraic data types are first used to capture stacks, environments, ars and states of a TTAM. A pretty-printing module follows to pretty-print the above data structures. Finally the TTAM implementation follows: first the main loop and transitions (the "run") function, then the "reduce" function that takes a target term, builds the initial machine state and runs it to normal form.
+* machine.ml: it implements the TTAM. The module begins with algebraic data types for stacks, environments, ars and states of a TTAM. Then a pretty-printing sub-module allows to turn all of the previous types to string. The pretty-printing function for terms take in input an ~is_value flag to mark the term accordingly to the knowledge that the term has been already evaluated or not. Finally the TTAM implementation follows: first the main loop and transitions (the "run") function, then the "reduce" function that takes a target term, builds the initial machine state and runs it to normal form.
 
 A TEST file contains three small terms to show the input syntax.
