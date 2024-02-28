@@ -48,10 +48,25 @@ struct
   | 9 -> "₉"
   | n -> pp_subscript (n / 10) ^ pp_subscript (n mod 10)
 
- let pp_array f a =
+  (* [pp_array ?replacing f a] prints an array [a] of elements
+     as a "<..;..;..>" string, printing every element using [f].
+     If [replacing] is set to [j], the elements before the j-th
+     position are printed prefixed by ◦, those after by • and the
+     position itself by ↓, i.e. we are printing a tuple stack item *)
+ let pp_array ?replacing f a =
+  let mark,j =
+   match replacing with
+    | None -> ref "",-1
+    | Some j -> ref "◦",j in
   let s = ref "<" in
   for i = 0 to Array.length a - 1 do
-   s := !s ^ f a.(i) ^ if i < Array.length a - 1 then ";" else ""
+   let res =
+    if i = j then begin
+     mark := "•" ;
+     "↓"
+    end else
+     !mark ^ f a.(i) in
+   s := !s ^ res ^ if i < Array.length a - 1 then ";" else ""
   done ;
   !s ^ ">"
  
@@ -63,14 +78,14 @@ struct
   | Proj(i,t) -> "π" ^ pp_subscript i ^ pp_term t
   | Tuple ts -> pp_array pp_term ts
   | Clos(f,n,t,us) ->
-     "[◦" ^ pp_term t ^ "|" ^ pp_array pp_term us ^ "]_(" ^ string_of_int f ^ "," ^ string_of_int n ^ ")"
+     "[◦" ^ pp_term t ^ "|" ^ pp_array pp_term us ^ "]₍" ^ pp_subscript f ^ "," ^ pp_subscript n ^ "₎"
  
  let pp_stack_item =
   function
     Todo t -> "◦" ^ pp_term t
   | Done v -> "•" ^ pp_term v
   | SProj i -> "π" ^ pp_subscript i
-  | STuple (i,ts) -> string_of_int i ^ "~" ^ pp_array pp_term ts
+  | STuple (i,ts) -> pp_array ~replacing:i pp_term ts
  
  let pp_stack k =
   let s = String.concat ":" (List.map pp_stack_item k) in
@@ -79,7 +94,7 @@ struct
  let pp_ar (k,e) = "(" ^ pp_stack k ^ "," ^ pp_env e ^ ")"
  let pp_ars a = String.concat ":" (List.map pp_ar a) ^ ":[]"
  let pp_status (b,t,k,e,a) =
-  (if b then "•" else "◦") ^ " | " ^
+  (if b then "•" else "◦") ^
   pp_term t ^ " | " ^
   pp_stack k ^ " | " ^
   pp_env e ^ " | " ^
