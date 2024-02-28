@@ -143,10 +143,10 @@ let rec run : status -> value = function status ->
     run (true,vs.(i),k,e,a)
  | (true,v,[],_,(k,e)::a) -> !!"•sea7" ;
     run (true,v,k,e,a)
- | (true,v,[],_,[]) -> !!"extract_value_from_normal_form"; v
+ | (true,v,[],_,[]) -> v (* The value extracted from the normal form *)
  | _ -> assert false
 
 (* main function to reduce a target term to normal form *)
 let reduce t =
  let nf = run (false,t,[],([||],[||]),[]) in
- Printf.printf "%s" (PP.pp_term ~is_value:true nf)
+ Printf.printf "\n\nThe value extracted from the normal form is:\n  %s" (PP.pp_term ~is_value:true nf)
