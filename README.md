@@ -37,12 +37,13 @@ Non clash-free terms (e.g. terms that reduce to a projection applied to an abstr
 # output syntax
 The source, intermediate and target terms corresponding to the user input are first displayed according to the internal representation, without any pretty-printing or sugaring. The terms, stacks, environments and machine states of the TTAM are printed in compact syntax according to the following grammar that does not distinguish between terms and values:
 
-p ::= πnw | πns
-t ::= p | πn t | <ts> | [◦t|b]_(n,m)  
-b ::= ps | ts  
-stack_item ::= ◦t | •t | πn | i~<ts>  
+p ::= πₙw | πₙs
+t ::= p | πₙ t | <t;..;t> | [◦t|b]₍ₙ,ₘ₎
+b ::= ps | ts
+stack_item ::= ◦t | •t | πₙ | <◦t;..;◦t;↓;•t;..;•t>
 env ::= ( ts, ts )  
 ar ::= ( stack, env )  
+ars ::= ar : .. : ar : []
 flag ::= ◦ | •  
 status ::= flag | t | stack | env | ars  
 
