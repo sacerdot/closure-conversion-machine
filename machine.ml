@@ -120,9 +120,14 @@ let (!!) s = Printf.printf "\n-%s->\n" s
      functions invoked are iterations over tuples are:
        - [Array.copy] in the "◦sea3" rule, which is linear in the width
          of a non-evaluated tuple, which is a subterm of the initial term
-       - [Array.map] in the "◦subw" rule, which is linear in the width
+       - [Array.map] in the "◦subc" rule, which is linear in the width
          of the bag of a non-evaluated closure, which is a subterm of the
          initial term
+     The costs of both transitions "◦sea3" and "◦sea3" are considered
+     constant in the paper because the linear cost in the width of the
+     initial term is amortized over the cost of search in complete
+     machine runs.
+
    We refer to the paper for the global, more fine grained analysis of
    the computational cost of the machine, that is there expressed only
    as a function of the number of "•beta_v" steps and the size of the
@@ -138,7 +143,7 @@ let rec run : status -> value = function status ->
      let ts' = Array.copy ts in
      let i = Array.length ts' - 1 in
      run (false,ts'.(i),STuple(i,ts')::k,e,a)
- | (false,Clos(f,n,t,us),k,((l,s) as e),a) -> !!"◦subw" ;
+ | (false,Clos(f,n,t,us),k,((l,s) as e),a) -> !!"◦subc" ;
     let us' =
      Array.map
       (function
