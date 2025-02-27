@@ -1,5 +1,5 @@
 # closure-conversion-machine
-Artifact for the Closure Conversion and Abstract Machines paper
+Artifact for the "Closure Conversion, Flat Environments, and the Complexity of Abstract Machines"
 
 # description of the artifact
 The artifact implements a Read-Eval-Print-Loop (REPL) to evaluate terms of the Source Calculus by means of a preliminary translation to the Target Calculus via an Intermediate Calculus, followed by reduction performed by the Target Tupled Abstract Machine (TTAM). The internal representation of the term after each translation is printed, followed by every single step of the TTAM.
